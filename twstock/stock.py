@@ -58,7 +58,7 @@ class TWSEFetcher(BaseFetcher):
         for retry_i in range(retry):
             if retry_i > 0:
                 print('retry %d ...' % retry_i)
-            while (time.time() - self.last_fectch_time) < 3.0:
+            while (time.time() - self.last_fectch_time) < 5.0:
                 time.sleep(0.5)
             self.last_fectch_time = time.time()
             try:
