@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import time
 import urllib.parse
 from collections import namedtuple
 
@@ -50,16 +51,24 @@ class TWSEFetcher(BaseFetcher):
         TWSE_BASE_URL, 'exchangeReport/STOCK_DAY')
 
     def __init__(self):
-        pass
+        self.last_fectch_time = float(0)
 
     def fetch(self, year: int, month: int, sid: str, retry: int=5):
         params = {'date': '%d%02d01' % (year, month), 'stockNo': sid}
         for retry_i in range(retry):
-            r = requests.get(self.REPORT_URL, params=params,
-                             proxies=get_proxies())
+            if retry_i > 0:
+                print('retry %d ...' % retry_i)
+            while (time.time() - self.last_fectch_time) < 3.0:
+                time.sleep(0.5)
+            self.last_fectch_time = time.time()
             try:
+                r = requests.get(self.REPORT_URL, params=params,
+                             proxies=get_proxies())
+            # try:
                 data = r.json()
             except JSONDecodeError:
+                continue
+            except requests.exceptions.ConnectionError:
                 continue
             else:
                 break
@@ -98,10 +107,14 @@ class TPEXFetcher(BaseFetcher):
 
     def __init__(self):
         pass
+        self.last_fectch_time = float(0)
 
     def fetch(self, year: int, month: int, sid: str, retry: int=5):
         params = {'d': '%d/%d' % (year - 1911, month), 'stkno': sid}
         for retry_i in range(retry):
+            while (time.time() - self.last_fectch_time) < 5.0:
+                time.sleep(0.5)
+            self.last_fectch_time = time.time()
             r = requests.get(self.REPORT_URL, params=params,
                              proxies=get_proxies())
             try:
@@ -143,6 +156,7 @@ class TPEXFetcher(BaseFetcher):
 class Stock(analytics.Analytics):
 
     def __init__(self, sid: str, initial_fetch: bool=True):
+        # print('hello, it is my stock')
         self.sid = sid
         self.fetcher = TWSEFetcher(
         ) if codes[sid].market == '上市' else TPEXFetcher()

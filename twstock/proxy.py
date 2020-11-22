@@ -40,7 +40,9 @@ class RoundRobinProxiesProvider(ProxyProvider):
         self._proxies_cycle = cycle(proxies)    
 
     def get_proxy(self):
-        return next(self._proxies_cycle)
+        next_proxy = next(self._proxies_cycle)
+        print(next_proxy)
+        return next_proxy
 
 
 _provider_instance = NoProxyProvier()
